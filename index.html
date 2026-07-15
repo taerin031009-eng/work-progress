@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>퇴근 프로그래스바</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+      font-family:
+        Pretendard,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+
+    .widget {
+      width: 100%;
+      max-width: 720px;
+      padding: 22px 24px 20px;
+      overflow: hidden;
+
+      background:
+        radial-gradient(
+          circle at top right,
+          rgba(255, 255, 255, 0.9),
+          transparent 38%
+        ),
+        linear-gradient(
+          135deg,
+          #fff8f3 0%,
+          #fff1f5 50%,
+          #f7f0ff 100%
+        );
+
+      border: 1px solid rgba(214, 172, 188, 0.45);
+      border-radius: 24px;
+
+      box-shadow:
+        0 10px 30px rgba(142, 98, 119, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .title {
+      margin-bottom: 4px;
+      color: #59444e;
+      font-size: 19px;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: -0.4px;
+    }
+
+    .message {
+      min-height: 20px;
+      margin-bottom: 24px;
+      color: #8b6978;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .route-area {
+      position: relative;
+      height: 72px;
+      margin: 0 14px;
+    }
+
+    .route {
+      position: absolute;
+      top: 29px;
+      right: 40px;
+      left: 40px;
+      height: 10px;
+
+      overflow: hidden;
+      background: rgba(193, 163, 176, 0.25);
+      border-radius: 999px;
+    }
+
+    .route-fill {
+      width: 0%;
+      height: 100%;
+
+      background: linear-gradient(
+        90deg,
+        #f5a6bc,
+        #c7a6e8
+      );
+
+      border-radius: inherit;
+      transition: width 0.8s ease;
+    }
+
+    .place {
+      position: absolute;
+      top: 15px;
+      z-index: 3;
+
+      width: 44px;
+      height: 44px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(205, 174, 187, 0.45);
+      border-radius: 50%;
+
+      font-size: 24px;
+
+      box-shadow: 0 5px 14px rgba(130, 92, 110, 0.12);
+    }
+
+    .office {
+      left: 0;
+    }
+
+    .home {
+      right: 0;
+    }
+
+    .character {
+      position: absolute;
+      top: 11px;
+      left: 40px;
+      z-index: 5;
+
+      width: 50px;
+      height: 50px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 31px;
+
+      transform: translateX(-50%);
+      transition: left 0.8s ease;
+      filter: drop-shadow(0 5px 5px rgba(101, 76, 88, 0.18));
+    }
+
+    .character.moving {
+      animation: bounce 1.3s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%,
+      100% {
+        transform: translate(-50%, 0) rotate(-2deg);
+      }
+
+      50% {
+        transform: translate(-50%, -5px) rotate(2deg);
+      }
+    }
+
+    .info {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .info-card {
+      flex: 1;
+      min-width: 0;
+      padding: 13px 10px;
+
+      background: rgba(255, 255, 255, 0.67);
+      border: 1px solid rgba(214, 180, 194, 0.36);
+      border-radius: 15px;
+
+      text-align: center;
+    }
+
+    .info-label {
+      margin-bottom: 4px;
+      color: #a17d8d;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .info-value {
+      color: #55414a;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .footer {
+      margin-top: 13px;
+      color: #a18491;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    @media (max-width: 460px) {
+      .widget {
+        padding: 18px 15px 17px;
+        border-radius: 19px;
+      }
+
+      .title {
+        font-size: 17px;
+      }
+
+      .route-area {
+        margin-right: 2px;
+        margin-left: 2px;
+      }
+
+      .info-value {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="widget">
+    <div class="title" id="title">
+      오늘도 퇴근을 향해 🐰
+    </div>
+
+    <div class="message" id="message">
+      퇴근 원정대 출발!
+    </div>
+
+    <section class="route-area">
+      <div class="route">
+        <div class="route-fill" id="routeFill"></div>
+      </div>
+
+      <div class="place office" title="출근">
+        🏢
+      </div>
+
+      <div
+        class="character"
+        id="character"
+        title="퇴근하는 중"
+      >
+        🐰
+      </div>
+
+      <div class="place home" title="퇴근">
+        🏠
+      </div>
+    </section>
+
+    <section class="info">
+      <div class="info-card">
+        <div class="info-label">
+          업무시간 진행률
+        </div>
+
+        <div class="info-value" id="progressText">
+          0%
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-label">
+          퇴근까지
+        </div>
+
+        <div class="info-value" id="remainingText">
+          계산 중
+        </div>
+      </div>
+    </section>
+
+    <div class="footer" id="footer">
+      09:00 출근 · 18:00 퇴근
+    </div>
+  </main>
+
+  <script>
+    /*
+      =====================================
+      기본 설정
+      =====================================
+    */
+
+    const START_HOUR = 9;
+    const START_MINUTE = 0;
+
+    const END_HOUR = 18;
+    const END_MINUTE = 0;
+
+    const CHARACTER = "🐰";
+    const TIME_ZONE = "Asia/Seoul";
+
+    /*
+      브라우저가 어느 나라에서 열려도
+      한국 시간을 가져오는 함수
+    */
+    function getKoreaTime() {
+      const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: TIME_ZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+      });
+
+      const parts = formatter.formatToParts(new Date());
+
+      const values = {};
+
+      for (const part of parts) {
+        if (part.type !== "literal") {
+          values[part.type] = part.value;
+        }
+      }
+
+      return {
+        year: Number(values.year),
+        month: Number(values.month),
+        day: Number(values.day),
+        hour: Number(values.hour),
+        minute: Number(values.minute),
+        second: Number(values.second),
+        weekday: values.weekday
+      };
+    }
+
+    function formatRemaining(totalSeconds) {
+      const safeSeconds = Math.max(0, totalSeconds);
+
+      const hours = Math.floor(safeSeconds / 3600);
+
+      const minutes = Math.floor(
+        (safeSeconds % 3600) / 60
+      );
+
+      if (hours === 0 && minutes === 0) {
+        return "곧 퇴근!";
+      }
+
+      if (hours === 0) {
+        return `${minutes}분`;
+      }
+
+      return `${hours}시간 ${minutes}분`;
+    }
+
+    function updateWidget() {
+      const now = getKoreaTime();
+
+      const character = document.getElementById("character");
+      const routeFill = document.getElementById("routeFill");
+      const progressText =
+        document.getElementById("progressText");
+      const remainingText =
+        document.getElementById("remainingText");
+      const message = document.getElementById("message");
+      const title = document.getElementById("title");
+
+      character.textContent = CHARACTER;
+
+      const startSeconds =
+        START_HOUR * 3600 +
+        START_MINUTE * 60;
+
+      const endSeconds =
+        END_HOUR * 3600 +
+        END_MINUTE * 60;
+
+      const currentSeconds =
+        now.hour * 3600 +
+        now.minute * 60 +
+        now.second;
+
+      const totalWorkSeconds =
+        endSeconds - startSeconds;
+
+      const isWeekend =
+        now.weekday === "Sat" ||
+        now.weekday === "Sun";
+
+      /*
+        주말 화면
+      */
+      if (isWeekend) {
+        setProgress(100);
+
+        title.textContent = "오늘은 쉬는 날 🌿";
+        message.textContent =
+          "토끼도 집에서 푹 쉬는 중이에요.";
+
+        progressText.textContent = "휴식 중";
+        remainingText.textContent = "행복 충전";
+
+        character.textContent = "🐰";
+        character.classList.remove("moving");
+
+        return;
+      }
+
+      /*
+        출근 전 화면
+      */
+      if (currentSeconds < startSeconds) {
+        setProgress(0);
+
+        title.textContent = "출근 준비 중이에요 ☀️";
+        message.textContent =
+          "아직 토끼가 회사에 도착하지 않았어요.";
+
+        progressText.textContent = "0%";
+        remainingText.textContent = "업무 시작 전";
+
+        character.classList.remove("moving");
+
+        return;
+      }
+
+      /*
+        퇴근 후 화면
+      */
+      if (currentSeconds >= endSeconds) {
+        setProgress(100);
+
+        title.textContent = "퇴근 완료! 🎉";
+        message.textContent =
+          "오늘도 정말 고생 많았어요.";
+
+        progressText.textContent = "100%";
+        remainingText.textContent = "퇴근 완료";
+
+        character.classList.remove("moving");
+
+        return;
+      }
+
+      /*
+        업무시간 화면
+      */
+      const elapsedSeconds =
+        currentSeconds - startSeconds;
+
+      const progress =
+        elapsedSeconds / totalWorkSeconds;
+
+      const percentage =
+        Math.min(
+          100,
+          Math.max(0, progress * 100)
+        );
+
+      const remainingSeconds =
+        endSeconds - currentSeconds;
+
+      setProgress(percentage);
+
+      title.textContent = "오늘도 퇴근을 향해 🐰";
+      message.textContent = getCheerMessage(percentage);
+
+      progressText.textContent =
+        `${Math.floor(percentage)}%`;
+
+      remainingText.textContent =
+        formatRemaining(remainingSeconds);
+
+      character.classList.add("moving");
+    }
+
+    function setProgress(percentage) {
+      const routeFill =
+        document.getElementById("routeFill");
+
+      const character =
+        document.getElementById("character");
+
+      const safePercentage =
+        Math.min(
+          100,
+          Math.max(0, percentage)
+        );
+
+      routeFill.style.width =
+        `${safePercentage}%`;
+
+      /*
+        캐릭터 이동 범위:
+        왼쪽 40px부터 오른쪽 40px까지
+      */
+      character.style.left =
+        `calc(
+          40px +
+          (100% - 80px) *
+          ${safePercentage / 100}
+        )`;
+    }
+
+    function getCheerMessage(percentage) {
+      if (percentage < 20) {
+        return "퇴근 원정대가 막 출발했어요!";
+      }
+
+      if (percentage < 40) {
+        return "차근차근 집으로 가는 중이에요.";
+      }
+
+      if (percentage < 60) {
+        return "벌써 절반 가까이 왔어요!";
+      }
+
+      if (percentage < 80) {
+        return "집이 점점 가까워지고 있어요.";
+      }
+
+      if (percentage < 95) {
+        return "조금만 더 가면 퇴근이에요!";
+      }
+
+      return "집이 바로 눈앞이에요! 🏠";
+    }
+
+    /*
+      처음 열었을 때 즉시 실행
+    */
+    updateWidget();
+
+    /*
+      1초마다 시간과 위치 갱신
+    */
+    setInterval(updateWidget, 1000);
+  </script>
+</body>
+</html>
